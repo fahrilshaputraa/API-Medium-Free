@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Medium API Service</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Mona Sans';
+            src: url('https://assets.codepen.io/64/Mona-Sans.woff2') format('woff2 supports variations'),
+                 url('https://assets.codepen.io/64/Mona-Sans.woff2') format('woff2-variations');
+            font-weight: 200 900;
+            font-stretch: 75% 125%;
+        }
+        body {
+            font-family: 'Mona Sans', sans-serif;
+            background-color: #fcfcfc;
+        }
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+        }
+        .brand {
+            font-family: 'Playfair Display', serif;
+            letter-spacing: -0.02em;
+        }
+        .also_brand {
+            font-family: 'Playfair Display', serif;
+            letter-spacing: -0.02em;
+            font-size: 0.7em;
+        }
+        .api-result {
+            display: none;
+        }
+        .api-result.is-visible {
+            display: block;
+        }
+        /* Custom SweetAlert2 Styles */
+        .swal2-styled.swal2-confirm {
+            background-color: #111827 !important;
+            color: white !important;
+        }
+        .swal2-styled.swal2-confirm:focus {
+            box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.5) !important;
+        }
+        .swal2-styled.swal2-cancel {
+            background-color: #6B7280 !important;
+            color: white !important;
+        }
+        .swal2-styled.swal2-cancel:focus {
+            box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.5) !important;
+        }
+        .swal2-custom {
+            font-family: 'Mona Sans', sans-serif;
+        }
+        .swal2-custom-confirm {
+            background-color: #111827 !important;
+            color: white !important;
+        }
+        .swal2-custom-cancel {
+            background-color: #6B7280 !important;
+            color: white !important;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+    <div id="app" class="flex flex-col min-h-screen">
+        <!-- Navbar -->
+        <nav class="fixed w-full z-10 bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <span class="text-2xl font-bold text-gray-900 brand">
+                            Medium <small class="also_brand">API Service</small> 
+                        </span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-gray-600">Welcome back, <span class="font-medium">{{ admin_username }}</span></span>
+                        <a href="{{ url_for('logout') }}" 
+                           class="px-4 py-2 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-all duration-200">
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-grow pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <!-- Generate API Key Section -->
+            <div class="card p-8 mb-8">
+                <h2 class="text-2xl font-semibold mb-6 text-gray-900">Generate New API Key</h2>
+                <form @submit.prevent="generateApi" class="flex gap-4">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="relative flex-1">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">@</span>
+                        <input type="text" 
+                               v-model="mediumUsername" 
+                               @input="error = ''"
+                               @blur="validateUsername"
+                               placeholder="Enter Medium username"
+                               class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-gray-900 focus:border-gray-900 sm:text-sm">
+                    </div>
+                    <button type="submit"
+                            class="px-8 py-3 font-medium text-white bg-gray-900 hover:bg-gray-800 transition-all duration-200"
+                            :disabled="isLoading || isValidating">
+                        <span v-if="isValidating">Validating...</span>
+                        <span v-else-if="isLoading">Generating...</span>
+                        <span v-else>Generate API Key</span>
+                    </button>
+                </form>
+                <div v-if="error" class="mt-4 p-4 bg-red-50 text-red-700 border border-red-100">
+                    [[ error ]]
+                </div>
+            </div>
+
+            <!-- API Keys List -->
+            <div class="card p-8">
+                <h2 class="text-2xl font-semibold mb-8 text-gray-900">Your API Keys</h2>
+                <div class="space-y-6">
+                    {% for api_key in api_keys %}
+                    <div class="card p-6">
+                        <div class="flex items-center justify-between">
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-semibold text-gray-900">@{{ api_key.medium_username }}</h3>
+                                    </div>
+                                    <div class="mt-2 space-y-2">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm font-medium text-gray-600">API Key:</span>
+                                            <code class="px-3 py-1 text-sm bg-gray-50 border border-gray-100">{{ api_key.key }}</code>
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm font-medium text-gray-600">Endpoint:</span>
+                                            <code class="px-3 py-1 text-sm bg-gray-50 border border-gray-100">
+                                                {{ request.host_url }}api/medium/{{ api_key.medium_username }}?api_key={{ api_key.key }}
+                                            </code>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center flex-col space-y-2">
+                                <div class="flex flex-col space-y-2 w-full">
+                                    <button @click="testApi('{{ api_key.medium_username }}')"
+                                        class="flex-1 px-4 py-1 text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 transition-all duration-200 rounded">
+                                        Test API
+                                    </button>
+                                    <button @click="confirmDelete('{{ api_key.key }}')"
+                                        type="button"
+                                        class="flex-1 px-4 py-1 text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition-all duration-200 rounded">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 api-result" :class="{ 'is-visible': showApiResult === '{{ api_key.medium_username }}' }" :id="'api-result-' + '{{ api_key.medium_username }}'">
+                            <div class="relative bg-gray-900 rounded-lg p-4">
+                                <div class="absolute right-2 top-2 flex space-x-2">
+                                    <button @click="copyToClipboard('{{ api_key.medium_username }}')"
+                                        class="px-3 py-1 text-sm bg-gray-800 hover:bg-gray-700 text-white rounded transition-all duration-200">
+                                        Copy
+                                    </button>
+                                    <button @click="closeApiResult('{{ api_key.medium_username }}')"
+                                        class="px-3 py-1 text-sm bg-gray-800 hover:bg-gray-700 text-white rounded transition-all duration-200">
+                                        Close
+                                    </button>
+                                </div>
+                                <pre class="mt-2 overflow-x-auto"><code class="language-json" id="json-{{ api_key.medium_username }}">Click "Test API" to see the response</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+
+        <footer class="w-full py-4 bg-white border-t border-gray-200 mt-auto">
+            <div class="text-center text-sm text-gray-600">
+                Created by <a href="https://fahrilshaputra.my.id" target="_blank" class="font-medium text-gray-900 hover:underline">Fahrilshaputra</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue
+
+        createApp({
+            delimiters: ['[[', ']]'],
+            setup() {
+                const mediumUsername = ref('')
+                const isLoading = ref(false)
+                const error = ref('')
+                const isValidating = ref(false)
+                const showApiResult = ref('')
+
+                async function validateUsername() {
+                    if (!mediumUsername.value) return
+                    
+                    isValidating.value = true
+                    error.value = ''
+                    
+                    try {
+                        const formData = new FormData()
+                        formData.append('medium_username', mediumUsername.value.replace('@', ''))
+                        formData.append('csrf_token', '{{ csrf_token() }}')
+                        
+                        await axios.post('/validate-username', formData)
+                        return true
+                    } catch (err) {
+                        error.value = err.response?.data?.error || 'Failed to validate username'
+                        return false
+                    } finally {
+                        isValidating.value = false
+                    }
+                }
+
+                async function generateApi() {
+                    if (isLoading.value || isValidating.value) return
+                    
+                    error.value = ''
+                    
+                    const isValid = await validateUsername()
+                    if (!isValid) return
+                    
+                    isLoading.value = true
+                    
+                    try {
+                        const formData = new FormData()
+                        formData.append('medium_username', mediumUsername.value.replace('@', ''))
+                        formData.append('csrf_token', '{{ csrf_token() }}')
+                        
+                        await axios.post('/generate-api', formData)
+                        window.location.reload()
+                    } catch (err) {
+                        error.value = err.response?.data?.error || 'Failed to generate API key'
+                        isLoading.value = false
+                    }
+                }
+
+                async function testApi(username) {
+                    const codeElement = document.querySelector(`#json-${username}`)
+                    showApiResult.value = username
+                    codeElement.textContent = 'Loading...'
+                    
+                    try {
+                        const response = await axios.get(`/test-api/${username}`)
+                        const formattedJson = JSON.stringify(response.data, null, 2)
+                        codeElement.textContent = formattedJson
+                        hljs.highlightElement(codeElement)
+                    } catch (err) {
+                        codeElement.textContent = JSON.stringify({
+                            error: err.response?.data?.error || 'Failed to fetch API data'
+                        }, null, 2)
+                        hljs.highlightElement(codeElement)
+                    }
+                }
+
+                async function confirmDelete(apiKey) {
+                    const result = await Swal.fire({
+                        title: 'Delete API Key?',
+                        text: "This action cannot be undone",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#111827',
+                        cancelButtonColor: '#6B7280',
+                        confirmButtonText: 'Yes, delete it',
+                        cancelButtonText: 'Cancel',
+                        customClass: {
+                            popup: 'swal2-custom',
+                            title: 'font-medium text-gray-900',
+                            htmlContainer: 'text-gray-500',
+                            confirmButton: 'swal2-custom-confirm',
+                            cancelButton: 'swal2-custom-cancel'
+                        }
+                    })
+
+                    if (result.isConfirmed) {
+                        const formData = new FormData()
+                        formData.append('csrf_token', '{{ csrf_token() }}')
+                        
+                        try {
+                            await axios.post(`/delete-api/${apiKey}`, formData)
+                            await Swal.fire({
+                                title: 'Deleted!',
+                                text: 'API key has been deleted successfully.',
+                                icon: 'success',
+                                confirmButtonColor: '#111827',
+                                customClass: {
+                                    popup: 'swal2-custom',
+                                    title: 'font-medium text-gray-900',
+                                    htmlContainer: 'text-gray-500',
+                                    confirmButton: 'swal2-custom-confirm'
+                                }
+                            })
+                            window.location.reload()
+                        } catch (err) {
+                            await Swal.fire({
+                                title: 'Error!',
+                                text: 'Failed to delete API key.',
+                                icon: 'error',
+                                confirmButtonColor: '#111827',
+                                customClass: {
+                                    popup: 'swal2-custom',
+                                    title: 'font-medium text-gray-900',
+                                    htmlContainer: 'text-gray-500',
+                                    confirmButton: 'swal2-custom-confirm'
+                                }
+                            })
+                        }
+                    }
+                }
+
+                function copyToClipboard(username) {
+                    const codeElement = document.querySelector(`#json-${username}`)
+                    if (!codeElement) return
+                    
+                    const text = codeElement.textContent
+                    if (!text || text === 'Click "Test API" to see the response') return
+                    
+                    // Create temporary textarea
+                    const textarea = document.createElement('textarea')
+                    textarea.value = text
+                    textarea.style.position = 'fixed'
+                    textarea.style.opacity = '0'
+                    document.body.appendChild(textarea)
+                    
+                    try {
+                        // Select and copy text
+                        textarea.select()
+                        document.execCommand('copy')
+                        document.body.removeChild(textarea)
+                        
+                        // Show success message
+                        Swal.fire({
+                            title: 'Copied!',
+                            text: 'JSON response copied to clipboard',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false,
+                            customClass: {
+                                popup: 'swal2-custom',
+                                title: 'font-medium text-gray-900',
+                                htmlContainer: 'text-gray-500'
+                            }
+                        })
+                    } catch (err) {
+                        document.body.removeChild(textarea)
+                        // Show error message
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Failed to copy to clipboard',
+                            icon: 'error',
+                            timer: 2000,
+                            showConfirmButton: false,
+                            customClass: {
+                                popup: 'swal2-custom',
+                                title: 'font-medium text-gray-900',
+                                htmlContainer: 'text-gray-500'
+                            }
+                        })
+                    }
+                }
+
+                function closeApiResult(username) {
+                    showApiResult.value = ''
+                }
+
+                return {
+                    mediumUsername,
+                    isLoading,
+                    error,
+                    isValidating,
+                    showApiResult,
+                    generateApi,
+                    validateUsername,
+                    testApi,
+                    confirmDelete,
+                    copyToClipboard,
+                    closeApiResult
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>

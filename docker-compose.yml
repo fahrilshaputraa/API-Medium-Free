@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - DEBUG=${DEBUG:-False}
+      - SECRET_KEY=${SECRET_KEY}
+      - HOST=${HOST:-0.0.0.0}
+      - PORT=${PORT:-5999}
+      - WORKERS=${WORKERS:-4}
+      - TIMEOUT=${TIMEOUT:-60}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-*}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS}
+      - CSRF_COOKIE_SECURE=${CSRF_COOKIE_SECURE:-False}
+      - CSRF_COOKIE_HTTPONLY=${CSRF_COOKIE_HTTPONLY:-True}
+      - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-False}
+      - WTF_CSRF_TIME_LIMIT=${WTF_CSRF_TIME_LIMIT:-3600}
+      - WTF_CSRF_SSL_STRICT=${WTF_CSRF_SSL_STRICT:-False}
+      - WTF_CSRF_ENABLED=${WTF_CSRF_ENABLED:-True}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${PORT}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

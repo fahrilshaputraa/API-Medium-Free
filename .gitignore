@@ -1,0 +1,13 @@
+# databases
+*.db
+*.sqlite
+
+# logs
+*.log
+
+# cache
+__pycache__
+
+# virtual environment
+venv
+.env
