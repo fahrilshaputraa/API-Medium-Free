@@ -390,6 +390,42 @@
                 }
             }
         }).mount('#app')
+
+        // Handle success messages from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const successMessage = urlParams.get('success_message');
+
+        if (successMessage === 'api_generated') {
+            Swal.fire({
+                title: 'Success!',
+                text: 'API key generated successfully.',
+                icon: 'success',
+                confirmButtonColor: '#111827',
+                customClass: {
+                    popup: 'swal2-custom',
+                    title: 'font-medium text-gray-900',
+                    htmlContainer: 'text-gray-500',
+                    confirmButton: 'swal2-custom-confirm'
+                }
+            });
+            // Clear the URL parameter to prevent re-showing the message on refresh
+            history.replaceState({}, document.title, window.location.pathname);
+        } else if (successMessage === 'api_deleted') {
+            Swal.fire({
+                title: 'Deleted!',
+                text: 'API key has been deleted successfully.',
+                icon: 'success',
+                confirmButtonColor: '#111827',
+                customClass: {
+                    popup: 'swal2-custom',
+                    title: 'font-medium text-gray-900',
+                    htmlContainer: 'text-gray-500',
+                    confirmButton: 'swal2-custom-confirm'
+                }
+            });
+            // Clear the URL parameter to prevent re-showing the message on refresh
+            history.replaceState({}, document.title, window.location.pathname);
+        }
     </script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
@@ -151,7 +151,6 @@ def login():
         password = request.form.get('password')
         
         if not username or not password:
-            flash('Please fill in all fields', 'error')
             return render_template('login.html', error='Please fill in all fields')
         
         db = get_db()
@@ -160,11 +159,9 @@ def login():
         if user and check_password_hash(user['password'], password):
             user_obj = User(user['id'], user['username'], user['password'])
             login_user(user_obj)
-            flash('Login successful!', 'success')
             next_page = request.args.get('next')
             return redirect(next_page or url_for('dashboard'))
         else:
-            flash('Invalid username or password', 'error')
             return render_template('login.html', error='Invalid username or password')
 
     return render_template('login.html')
@@ -173,7 +170,6 @@ def login():
 def register():
     # If users exist and current user is not authenticated, redirect to login
     if has_users() and not current_user.is_authenticated:
-        flash('Registration is closed. Please login.')
         return redirect(url_for('login'))
 
     if request.method == 'POST':
@@ -182,14 +178,12 @@ def register():
         db = get_db()
 
         if db.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone() is not None:
-            flash('Username already exists')
             return redirect(url_for('register'))
 
         db.execute('INSERT INTO users (username, password) VALUES (?, ?)',
                   (username, generate_password_hash(password)))
         db.commit()
         
-        flash('Registration successful! Please login.')
         return redirect(url_for('login'))
     
     return render_template('register.html')
@@ -214,7 +208,7 @@ def generate_api():
         db.execute('INSERT INTO api_keys (key, user_id, medium_username) VALUES (?, ?, ?)',
                   (api_key, current_user.id, medium_username))
         db.commit()
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('dashboard', success_message='api_generated'))
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -227,10 +221,12 @@ def validate_username():
         
     try:
         url = f'https://medium.com/@{medium_username}/feed'
-        response = requests.get(url)
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'}
+        response = requests.get(url, headers=headers)
         if response.status_code == 404:
             return jsonify({'valid': False, 'error': 'Medium username not found'}), 404
         elif response.status_code != 200:
+            print(f"Error fetching Medium feed: {response.status_code}")
             return jsonify({'valid': False, 'error': 'Failed to validate username'}), 400
             
         return jsonify({'valid': True}), 200
@@ -245,10 +241,10 @@ def delete_api(api_key):
         db = get_db()
         db.execute('DELETE FROM api_keys WHERE key = ? AND user_id = ?', (api_key, current_user.id))
         db.commit()
-        flash('API key deleted successfully')
+        db.close()
         return redirect(url_for('dashboard'))
     except Exception as e:
-        flash('Failed to delete API key')
+        db.close()
         return redirect(url_for('dashboard'))
 
 @app.route('/api/medium/<username>')
@@ -265,7 +261,8 @@ def get_medium_feed(username):
 
     try:
         url = f'https://medium.com/@{username}/feed'
-        response = requests.get(url)
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'}
+        response = requests.get(url, headers=headers)
         
         if response.status_code == 404:
             return jsonify({'error': 'Medium username not found'}), 404
@@ -281,6 +278,7 @@ def parse_medium_feed(xml_content):
     import xml.etree.ElementTree as ET
     from datetime import datetime
     import html
+    import re
 
     try:
         root = ET.fromstring(xml_content)
@@ -289,6 +287,20 @@ def parse_medium_feed(xml_content):
         
         articles = []
         for item in items:
+            content_html = html.unescape(item.find('{http://purl.org/rss/1.0/modules/content/}encoded').text)
+            
+            # Extract images and filter out tracking pixels
+            all_images = re.findall(r'<img[^>]+src="([^">]+)"', content_html)
+            images = [img for img in all_images if not img.startswith('https://medium.com/_/stat')]
+
+            # Remove image tags from content, including the figure wrapper
+            clean_content_html = re.sub(r'<figure>.*?</figure>', '', content_html, flags=re.DOTALL)
+            # Also remove the tracking pixel
+            clean_content_html = re.sub(r'<img src="https://medium.com/_/stat.*?"[^>]*>', '', clean_content_html).strip()
+
+            # Create a plain text version by removing all HTML tags
+            plain_text_content = re.sub(r'<[^>]+>', '', clean_content_html).strip()
+
             # Parse publication date
             pub_date = item.find('pubDate').text
             pub_timestamp = datetime.strptime(pub_date, '%a, %d %b %Y %H:%M:%S %Z').timestamp() * 1000
@@ -303,11 +315,11 @@ def parse_medium_feed(xml_content):
                 'author': html.unescape(item.find('{http://purl.org/dc/elements/1.1/}creator').text),
                 'published': int(pub_timestamp),
                 'created': int(pub_timestamp),
-                'content': html.unescape(item.find('{http://purl.org/rss/1.0/modules/content/}encoded').text),
-                'content_encoded': html.unescape(item.find('{http://purl.org/rss/1.0/modules/content/}encoded').text),
+                'content': plain_text_content,
+                'content_encoded': clean_content_html,
                 'category': categories[0] if len(categories) == 1 else categories,
                 'enclosures': [],
-                'media': {}
+                'media': { "images": images }
             }
             articles.append(article)
         
@@ -331,7 +343,8 @@ def test_api(username):
             return jsonify({'error': 'API key not found'}), 404
 
         # Test the Medium RSS feed
-        response = requests.get(f'https://medium.com/feed/@{username}')
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'}
+        response = requests.get(f'https://medium.com/feed/@{username}', headers=headers)
         if response.status_code != 200:
             return jsonify({'error': 'Failed to fetch Medium feed'}), response.status_code
 
@@ -346,7 +359,8 @@ def test_api(username):
 def test_api_endpoint(username):
     try:
         url = f'https://medium.com/@{username}/feed'
-        response = requests.get(url)
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'}
+        response = requests.get(url, headers=headers)
         
         if response.status_code == 404:
             return jsonify({'error': 'Medium username not found'}), 404

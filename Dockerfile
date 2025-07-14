@@ -38,15 +38,8 @@ EXPOSE 8060
 
 # Create entrypoint script
 RUN echo '#!/bin/sh\n\
-gunicorn \
-    --bind $HOST:$PORT \
-    --workers $WORKERS \
-    --timeout $TIMEOUT \
-    --access-logfile - \
-    --error-logfile - \
-    --log-level $LOG_LEVEL \
-    app:app\
+uvicorn app:app     --host $HOST     --port $PORT     --workers $WORKERS     --timeout-keep-alive $TIMEOUT     --log-level $LOG_LEVEL 
 ' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Run the entrypoint script
-CMD ["/app/entrypoint.sh"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "$PORT", "--workers", "$WORKERS", "--timeout-keep-alive", "$TIMEOUT", "--log-level", "$LOG_LEVEL"]

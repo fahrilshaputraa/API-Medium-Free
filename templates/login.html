@@ -44,15 +44,11 @@
                 </div>
             </div>
             
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="{% if category == 'error' %}text-red-600{% else %}text-green-600{% endif %} text-sm">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+            {% if error %}
+                <div class="text-red-600 text-sm">
+                    {{ error }}
+                </div>
+            {% endif %}
 
             <div>
                 <button type="submit"

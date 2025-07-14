@@ -1,0 +1,41 @@
+@FE<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0" xmlns:cc="http://cyber.law.harvard.edu/rss/creativeCommonsRssModule.html">
+    <channel>
+        <title><![CDATA[Stories by Fahrilshaputra on Medium]]></title>
+        <description><![CDATA[Stories by Fahrilshaputra on Medium]]></description>
+        <link>https://medium.com/@fahrilshaputra?source=rss-617a8b6d2830------2</link>
+        <image>
+            <url>https://cdn-images-1.medium.com/fit/c/150/150/0*LtWJV_y5BvEL74eM</url>
+            <title>Stories by Fahrilshaputra on Medium</title>
+            <link>https://medium.com/@fahrilshaputra?source=rss-617a8b6d2830------2</link>
+        </image>
+        <generator>Medium</generator>
+        <lastBuildDate>Mon, 14 Jul 2025 04:40:29 GMT</lastBuildDate>
+        <atom:link href="https://medium.com/@fahrilshaputra/feed" rel="self" type="application/rss+xml"/>
+        <webMaster><![CDATA[yourfriends@medium.com]]></webMaster>
+        <atom:link href="http://medium.superfeedr.com" rel="hub"/>
+        <item>
+            <title><![CDATA[Cara install swagger di Golang dengan menggunakan fiber.]]></title>
+            <link>https://medium.com/@fahrilshaputra/cara-install-swagger-di-golang-dengan-menggunakan-fiber-568980fca795?source=rss-617a8b6d2830------2</link>
+            <guid isPermaLink="false">https://medium.com/p/568980fca795</guid>
+            <category><![CDATA[golang]]></category>
+            <dc:creator><![CDATA[Fahrilshaputra]]></dc:creator>
+            <pubDate>Mon, 09 Dec 2024 09:10:38 GMT</pubDate>
+            <atom:updated>2024-12-09T09:10:38.322Z</atom:updated>
+            <content:encoded><![CDATA[<p>Sebelum lanjut bagaimana cara penginstallannya kita haru mengenal terlebih dahulu apa itu golang, fiber, dan swagger</p><ol><li>Golang atau Go<br>Diambil dari <a href="https://codingstudio.id/blog/golang-adalah/">codingstudio</a>…<br>Golang adalah bahasa pemrograman yang memiliki sejumlah kelebihan yang tidak dimiliki bahasa pemrograman yang lainnya. Hadirnya bahasa pemrograman Go Language (Golang) semakin dirasakan oleh para pengembang. Tidak heran jika banyak orang yang mulai belajar bahasa pemrograman yang satu ini.<br>Golang merupakan bahasa pemrograman yang dibuat Google dan tujuannya untuk menyempurnakan bahasa pemrograman yang ada, seperti C, Phyton dan yang lainnya. Golang bisa jadi pilihan yang tepat saat membuat aplikasi baru. Nah, supaya Anda lebih memahami Go Language (Golang) bisa simak penjelasan di bawah ini.</li><li>Fiber <br>Fiber adalah kerangka kerja web Go yang dibangun di atas Fasthttp, mesin HTTP tercepat untuk Go. Fiber dirancang untuk mempermudah pengembangan cepat dengan alokasi memori nol dan kinerja yang optimal.</li><li>Swagger<br>Swagger adalah alat untuk mendeskripsikan struktur API sehingga bisa dibaca oleh mesin. Dengan membaca struktur API, Swagger bisa otomatis membuat dokumentasi interaktif dan menghasilkan pustaka klien untuk API dalam berbagai bahasa. Ini mempercepat pengembangan API dan memastikan dokumentasi yang konsisten dan baik bagi pengguna akhir.</li></ol><h4>Cara Penginstallan Golang</h4><p>Kalian dapat akses langsung ke website nya golang dan pergi ke halaman downloadnya golang, atau lebih cepat klik link berikut <a href="https://go.dev/doc/install">Download and install — The Go Programming Language</a></p><p>Setalah anda buka disana, pilih penginstallan sesuai dengan apa yang anda mau insatall, contoh saya install pada linux..</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*B-EwiIv6461kV7YVJB2LSQ.png" /></figure><p>hanya cukup ikuti saja perintah yang di berikan</p><img src="https://medium.com/_/stat?event=post.clientViewed&referrerSource=full_rss&postId=568980fca795" width="1" height="1" alt="">]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[Dia]]></title>
+            <link>https://medium.com/@fahrilshaputra/dia-36ca0d843ab0?source=rss-617a8b6d2830------2</link>
+            <guid isPermaLink="false">https://medium.com/p/36ca0d843ab0</guid>
+            <category><![CDATA[tentang-dia]]></category>
+            <category><![CDATA[cinta-dan-puisi]]></category>
+            <category><![CDATA[cinta]]></category>
+            <category><![CDATA[i-love-you]]></category>
+            <category><![CDATA[dia]]></category>
+            <dc:creator><![CDATA[Fahrilshaputra]]></dc:creator>
+            <pubDate>Tue, 21 May 2024 09:57:58 GMT</pubDate>
+            <atom:updated>2024-05-21T09:57:58.219Z</atom:updated>
+            <content:encoded><![CDATA[<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*xhUw2UVQe48oZImtBHMJ-Q.png" /><figcaption>Melihatmu tersenyum cukup untuk membuatku bahagia</figcaption></figure><p>Dia orang yang ceria, emosian, lucu, cantik, manis, manja, keren, extrovert, dan berbeda dari yang lain.</p><p>Dia marah, saya takut, tapi lebih takut jika Dia sudah tidak marah. <br>Dia selalu melarang, saya risih, tapi lebih risih jika Dia sudah tidak melarang. <br>Dia manja, saya terganggu, tapi lebih terganggu jika Dia sudah tidak manja.</p><p>Takut kehilangan adalah hal yang wajar, karena kita mencintai suatu hal sampai pikiran kita menyimpulkan apa yang sudah jadi milik kita tidak boleh dimiliki orang lain atau pun kehilangan.</p><p>Namun nyatanya ketika kita terlalu mengenggam terlalu erat terhadap apa yang sudah menjadi milik kita, lama kelamaan hal tersebut akan rusak oleh diri kita sendiri, bukan orang lain.</p><p>Dia atau diriku, kita tidak tau apakah kita akan berjodoh atau tidak, mungkin aku bukan jodohnya atau sebaliknya Dia bukan jodoh ku, tapi aku sebagai manusia aku ingin menjadi orang normal, berharap untuk Dia jadi milik-ku.</p><p>Dia, banyak orang yang suka padanya, aku ceburu? aku curiga? aku posesif? aku ga suka?, ya… semuanya betul. Bukan kah itu normal?, tapi aku selau berusaha untuk tidak terlalu, aku takar saja secukupnya ketika aku mulai merasakannya.</p><p>Dia, semoga baca article ini… <br>percayalah semua ini tentang Dia, orang yang ku kenal yang sampai saat ini aku mencintainya atau mungkin bahkan sampai akhir hayatku aku mencintai Dia.</p><p>Terimakasih, telah ada di hidupku.<br><em>Fahrilshaputra -</em></p><img src="https://medium.com/_/stat?event=post.clientViewed&referrerSource=full_rss&postId=36ca0d843ab0" width="1" height="1" alt="">]]></content:encoded>
+        </item>
+    </channel>
+</rss>
