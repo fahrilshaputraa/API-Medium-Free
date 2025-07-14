@@ -201,6 +201,15 @@ def generate_api():
     if not medium_username:
         return jsonify({'error': 'Medium username is required'}), 400
 
+    db = get_db()
+    existing_key = db.execute(
+        'SELECT id FROM api_keys WHERE user_id = ? AND medium_username = ?',
+        (current_user.id, medium_username)
+    ).fetchone()
+
+    if existing_key:
+        return jsonify({'error': f'API key for {medium_username} already exists.'}), 409 # 409 Conflict
+
     api_key = secrets.token_urlsafe(32)
     db = get_db()
     
