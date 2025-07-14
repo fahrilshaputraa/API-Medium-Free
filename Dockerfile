@@ -1,5 +1,5 @@
-# Use Python 3.9 slim image as base
-FROM python:3.9-slim
+# Use Python 3.10 slim image as base
+FROM python:3.10-slim
 
 # Set working directory
 WORKDIR /app
@@ -21,14 +21,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements file
-COPY requirements.txt .
+# Install uv and uvicorn
+RUN pip install uv uvicorn
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy project files
+# Copy project files (including pyproject.toml)
 COPY . .
+
+# Install Python dependencies using uv
+RUN uv pip install . --system
 
 # Create volume for database
 VOLUME ["/app/instance"]
@@ -36,10 +36,5 @@ VOLUME ["/app/instance"]
 # Expose port
 EXPOSE 8060
 
-# Create entrypoint script
-RUN echo '#!/bin/sh\n\
-uvicorn app:app     --host $HOST     --port $PORT     --workers $WORKERS     --timeout-keep-alive $TIMEOUT     --log-level $LOG_LEVEL 
-' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
-
-# Run the entrypoint script
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "$PORT", "--workers", "$WORKERS", "--timeout-keep-alive", "$TIMEOUT", "--log-level", "$LOG_LEVEL"]
+# CMD directly runs uvicorn, no need for entrypoint.sh
+CMD gunicorn --bind 0.0.0.0:$PORT --workers $WORKERS --timeout $TIMEOUT --log-level $LOG_LEVEL app:app
